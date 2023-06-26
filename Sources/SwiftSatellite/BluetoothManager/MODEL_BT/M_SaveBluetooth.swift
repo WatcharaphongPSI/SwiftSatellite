@@ -7,7 +7,7 @@
 
 import Foundation
 
-class M_SaveBluetooth : Codable {
+public class M_SaveBluetooth : Codable {
     
     var userTitleName       : String
     var userIpDevice        : String
