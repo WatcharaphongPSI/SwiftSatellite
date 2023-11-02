@@ -12,7 +12,9 @@ public class BT_Manager: UIViewController {
     
     var myBluetoothList    = [M_UserBluetooth]()
     var myBluetoothListCC  : M_UserBluetooth!
-
+    
+    var myDataToBox      = [Data]()
+    
     public override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -122,12 +124,12 @@ public class BT_Manager: UIViewController {
     
 //MARK: Setup WriteValue ------------------------
     
-    public func setupWriteValue_BT(peripheral : Peripheral, link : String, completion: @escaping (Bool)->Void) {
+    public func setupWriteValue_BT(peripheral : Peripheral, link : String, isType : String, completion: @escaping (Bool)->Void) {
         
         var isStatus   = Bool()
         var indexCount = [Int]()
         
-        let openComment : [UInt8] = setupDetectHeadingType()
+        let openComment : [UInt8] = setupDetectHeadingType(isType: isType)
         let closeComment: [UInt8] = [0x5B,0x45,0x5D]
         
         let resultsLength         = link.count/53 + 1
@@ -195,6 +197,60 @@ public class BT_Manager: UIViewController {
         }
     }
     
+    public func setupWriteInternet_BT(peripheral : Peripheral, link : String, isType : String, completion: @escaping (Bool)->Void) {
+        
+        myDataToBox.removeAll()
+        
+        var isStatus              = Bool()
+        var indexCount            = [Int]()
+        
+        let openComment : [UInt8] = setupDetectHeadingType(isType: isType)
+        let closeComment: [UInt8] = [0x5B,0x45,0x5D]
+        
+        let resultsLength         = (link.count/1012) + 1
+        let length      : [UInt8] = [UInt8(resultsLength)]
+        let myLink                = subLink(link: link, length: resultsLength)
+        
+        for (_, element) in myLink.enumerated() {
+            
+            indexCount.append(1)
+            
+            let index       : [UInt8] = [UInt8(indexCount.count)]
+            let myLink      : Data    = Data(element.utf8)
+            
+            let sum = 2 + myLink.count
+            
+            //Mark Saritwat
+            let lengthConvert: Int = 2 * MemoryLayout<UInt8>.size  //You could specify the desired length
+            
+            let a = withUnsafeBytes(of: sum) { bytes in
+                Array(bytes.prefix(lengthConvert))
+            }
+            
+            let result:[UInt8] = Array(a.reversed()) //[7, 227]
+            
+            var myData = Data()
+            myData.append(contentsOf: openComment)
+            myData.append(contentsOf: result)
+            myData.append(contentsOf: length)
+            myData.append(contentsOf: index)
+            myData.append(myLink)
+            myData.append(contentsOf: closeComment)
+            
+            myDataToBox.append(myData)
+            
+            sendWriteValue(peripheral: peripheral, results: myData)
+        }
+        
+        isStatus = true
+        
+        DispatchQueue.main.async {
+            completion(isStatus)
+        }
+        
+//        print("Total link send to box ------- : \(myDataToBox.count)")
+    }
+    
 //MARK: Setup Function----------------------------
     
     func setupAppendBluetoothList(peripheral : Peripheral, ipDevice : String, rssi : Int, isConnected : Bool) -> [M_UserBluetooth] {
@@ -216,9 +272,16 @@ public class BT_Manager: UIViewController {
         return ""
     }
     
-    func setupDetectHeadingType() -> [UInt8] {
+    func setupDetectHeadingType(isType : String) -> [UInt8] {
         
-        return [0x5B,0x53,0x5D,0x20,0x03,0x00]
+        if isType == "Link" {
+            
+            return  [0x5B,0x53,0x5D,0x20,0x03]
+            
+        } else {
+            
+            return [0x5B,0x53,0x5D,0x20,0x03,0x00]
+        }
     }
     
     func subLink(link : String, length : Int) -> [String] {
@@ -264,7 +327,7 @@ public class BT_Manager: UIViewController {
     func sendWriteValue(peripheral : Peripheral, results : Data) {
         
         peripheral.writeValue(ofCharacWithUUID: "fff4", fromServiceWithUUID: "fff0", value: results, type: .withoutResponse) {
-            result in
+            result in 
             switch result {
             case .success:
                 
