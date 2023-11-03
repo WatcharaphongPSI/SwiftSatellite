@@ -10,10 +10,15 @@ import Foundation
 
 public class BT_Manager: UIViewController {
     
+    var isPeripheral       : Peripheral!
+    
     var myBluetoothList    = [M_UserBluetooth]()
     var myBluetoothListCC  : M_UserBluetooth!
     
-    var myDataToBox      = [Data]()
+    var myDataToBox        = [Data]()
+    
+    var timerTest          : Timer?
+    var isNumber           = 0
     
     public override func viewDidLoad() {
         super.viewDidLoad()
@@ -197,9 +202,13 @@ public class BT_Manager: UIViewController {
         }
     }
     
+//Test Send Write data IPTV -----
+    
     public func setupWriteInternet_BT(peripheral : Peripheral, link : String, isType : String, completion: @escaping (Bool)->Void) {
         
         myDataToBox.removeAll()
+        
+        isPeripheral = peripheral
         
         var isStatus              = Bool()
         var indexCount            = [Int]()
@@ -238,8 +247,6 @@ public class BT_Manager: UIViewController {
             myData.append(contentsOf: closeComment)
             
             myDataToBox.append(myData)
-            
-            sendWriteValue(peripheral: peripheral, results: myData)
         }
         
         isStatus = true
@@ -248,8 +255,41 @@ public class BT_Manager: UIViewController {
             completion(isStatus)
         }
         
-//        print("Total link send to box ------- : \(myDataToBox.count)")
+        setupSendDataToBox()
     }
+        
+    func setupSendDataToBox() {
+        
+        guard self.timerTest == nil else { return }
+        self.timerTest = Timer.scheduledTimer(timeInterval: 0.3, target: self, selector: #selector(self.sendLinkToBox), userInfo: nil, repeats: true)
+    }
+    
+    func stopTimer() {
+        
+        guard timerTest != nil else { return }
+        timerTest?.invalidate()
+        timerTest = nil
+    }
+    
+    @objc func sendLinkToBox() {
+        
+        if  myDataToBox.count - 1 == isNumber {
+            
+            sendWriteValue(peripheral: isPeripheral, results: myDataToBox[isNumber])
+            
+            NotificationCenter.default.post(name: NSNotification.Name("StopSendingdata"), object: nil)
+            
+            stopTimer()
+            
+        } else {
+
+            sendWriteValue(peripheral: isPeripheral, results: myDataToBox[isNumber])
+            
+            isNumber = isNumber + 1
+        }
+    }
+    
+// End Test Send Write data IPTV ---------
     
 //MARK: Setup Function----------------------------
     
