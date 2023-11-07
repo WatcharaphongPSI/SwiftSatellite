@@ -316,7 +316,7 @@ public class BT_Manager: UIViewController {
         
         if isType == "Link" {
             
-            return  [0x5B,0x53,0x5D,0x20,0x03]
+            return  [0x5B,0x53,0x5D,0x10,0x02,0x00,0x00]
             
         } else {
             
