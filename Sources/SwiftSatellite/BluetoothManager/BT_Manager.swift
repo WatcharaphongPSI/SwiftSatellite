@@ -216,7 +216,7 @@ public class BT_Manager: UIViewController {
         let openComment : [UInt8] = setupDetectHeadingType(isType: isType)
         let closeComment: [UInt8] = [0x5B,0x45,0x5D]
         
-        let resultsLength         = (link.count/1012) + 1
+        let resultsLength         = link.count/53 + 1
         let length      : [UInt8] = [UInt8(resultsLength)]
         let myLink                = subLink(link: link, length: resultsLength)
         
@@ -245,6 +245,8 @@ public class BT_Manager: UIViewController {
             myData.append(contentsOf: index)
             myData.append(myLink)
             myData.append(contentsOf: closeComment)
+            
+            print("My link : \(myLink) -------------")
             
             myDataToBox.append(myData)
         }
@@ -316,7 +318,7 @@ public class BT_Manager: UIViewController {
         
         if isType == "Link" {
             
-            return  [0x5B,0x53,0x5D,0x10,0x02,0x00,0x00]
+            return  [0x5B,0x53,0x5D,0x20,0x03]
             
         } else {
             
