@@ -202,68 +202,63 @@ public class BT_Manager: UIViewController {
         }
     }
     
-//Test Send Write data IPTV -----
+//MARK: Setup Write Sync PlayList ------------------------
     
-    public func setupWriteInternet_BT(peripheral : Peripheral, link : String, isType : String, completion: @escaping (Bool)->Void) {
-        
-        myDataToBox.removeAll()
+    func setupWrite_SyncYoutubePlayList_BT(peripheral : Peripheral, link : String, isType : String, completion: @escaping (Bool)->Void) {
         
         isPeripheral = peripheral
+    
+        let myDataLink = Data(link.utf8)
         
-        var isStatus              = Bool()
-        var indexCount            = [Int]()
+        var isStatus   = Bool()
+        var indexCount = [Int]()
         
         let openComment : [UInt8] = setupDetectHeadingType(isType: isType)
         let closeComment: [UInt8] = [0x5B,0x45,0x5D]
         
-        let resultsLength         = link.count/53 + 1
-        let length      : [UInt8] = [UInt8(resultsLength)]
-        let myLink                = subLink(link: link, length: resultsLength)
+        let resultsLength         = myDataLink.count/52 + 1
+
+        let lengthCount :[UInt8] = [UInt8(resultsLength)]
+        let length      : [UInt8] = lengthCount
+        
+        let myLink = subLinkData(link: myDataLink, length: resultsLength)
         
         for (_, element) in myLink.enumerated() {
             
             indexCount.append(1)
+
+            let indexPath   : [UInt8] = [UInt8(indexCount.count)]
+            let index       : [UInt8] = indexPath
+
+            let bytes = [UInt8](element)
+
+            let arrayLink : [UInt8] = bytes
             
-            let index       : [UInt8] = [UInt8(indexCount.count)]
-            let myLink      : Data    = Data(element.utf8)
-            
-            let sum = 2 + myLink.count
-            
-            //Mark Saritwat
-            let lengthConvert: Int = 2 * MemoryLayout<UInt8>.size  //You could specify the desired length
-            
-            let a = withUnsafeBytes(of: sum) { bytes in
-                Array(bytes.prefix(lengthConvert))
-            }
-            
-            let result:[UInt8] = Array(a.reversed()) //[7, 227]
-            
-            var myData = Data()
-            myData.append(contentsOf: openComment)
-            myData.append(contentsOf: result)
-            myData.append(contentsOf: length)
-            myData.append(contentsOf: index)
-            myData.append(myLink)
-            myData.append(contentsOf: closeComment)
-            
-            print("My link : \(myLink) -------------")
+            let sum = 2 + arrayLink.count
+            let value : UInt8 = UInt8(sum)
+            let paramLength:[UInt8] = [value]
+
+            let complete: [UInt8] = openComment + paramLength + length + index + arrayLink + closeComment
+            let myData = Data(complete)
             
             myDataToBox.append(myData)
         }
         
         isStatus = true
-        
+
         DispatchQueue.main.async {
             completion(isStatus)
         }
         
+        print("Total link send to box ------- : \(myDataToBox.count)")
+        
         setupSendDataToBox()
     }
-        
+    
     func setupSendDataToBox() {
         
         guard self.timerTest == nil else { return }
-        self.timerTest = Timer.scheduledTimer(timeInterval: 0.3, target: self, selector: #selector(self.sendLinkToBox), userInfo: nil, repeats: true)
+        self.timerTest = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(self.sendLinkToBox), userInfo: nil, repeats: true)
     }
     
     func stopTimer() {
@@ -274,24 +269,27 @@ public class BT_Manager: UIViewController {
     }
     
     @objc func sendLinkToBox() {
-        
+
         if  myDataToBox.count - 1 == isNumber {
+        
+            print("Final send to box count ------ : \(isNumber)")
             
             sendWriteValue(peripheral: isPeripheral, results: myDataToBox[isNumber])
-            
+
             NotificationCenter.default.post(name: NSNotification.Name("StopSendingdata"), object: nil)
-            
+
             stopTimer()
             
         } else {
-
-            sendWriteValue(peripheral: isPeripheral, results: myDataToBox[isNumber])
             
+            print("isNumber send : \(isNumber)")
+            
+            sendWriteValue(peripheral: isPeripheral, results: myDataToBox[isNumber])
             isNumber = isNumber + 1
         }
     }
-    
-// End Test Send Write data IPTV ---------
+
+// END Setup Write Sync PlayList -------------------
     
 //MARK: Setup Function----------------------------
     
@@ -361,6 +359,50 @@ public class BT_Manager: UIViewController {
         return myLink
     }
     
+    func subLinkData(link : Data, length : Int) -> [Data] {
+        
+        var a1  = Data()
+        var aa1 = Data()
+        
+        var myLink = [Data]()
+        
+        for i in 1...length {
+            
+            if i == 1 {
+                
+                (a1,aa1) = subDataIndex(results: link)
+                myLink.append(a1)
+                
+            } else if i == 2 {
+                
+                (a1,aa1) = subDataIndex(results: aa1)
+                myLink.append(a1)
+                
+            } else if i == 3 {
+                
+                (a1,aa1) = subDataIndex(results: aa1)
+                myLink.append(a1)
+                
+            } else if i == 4 {
+                
+                (a1,aa1) = subDataIndex(results: aa1)
+                myLink.append(a1)
+                
+            } else {
+                
+                (a1,aa1) = subDataIndex(results: aa1)
+                
+                myLink.append(a1)
+            }
+        }
+        return myLink
+    }
+    
+    func subDataIndex(results : Data) -> (Data, Data){
+        
+        return (results.subData(from: 0, length: 52), results.subData(from: 52))
+    }
+    
     func subStringIndex(results : String) -> (String, String) {
         
         return (results.substring(from: 0, length: 52), results.substring(from: 52))
@@ -417,6 +459,82 @@ extension Data {
     }
     func hexMacAddrEncodedString() -> String {
         return map { String(format: "%02hhx:", $0) }.joined()
+    }
+    
+    //Setup Sub Data ----------------------
+    
+    func subData(from: Int?, to: Int?) -> Data {
+        if let start = from {
+            guard start < self.count else {
+                return Data()
+            }
+        }
+        
+        if let end = to {
+            guard end >= 0 else {
+                return Data()
+            }
+        }
+        
+        if let start = from, let end = to {
+            guard end - start >= 0 else {
+                return Data()
+            }
+        }
+        
+        let startIndex: Data.Index
+        if let start = from, start >= 0 {
+            startIndex = self.index(self.startIndex, offsetBy: start)
+        } else {
+            startIndex = self.startIndex
+        }
+        
+        let endIndex: Data.Index
+        if let end = to, end >= 0, end < self.count {
+            endIndex = self.index(self.startIndex, offsetBy: end + 1)
+        } else {
+            endIndex = self.endIndex
+        }
+        
+        return Data(self[startIndex ..< endIndex])
+    }
+    
+    func subData(from: Int) -> Data {
+        return self.subData(from: from, to: nil)
+    }
+    
+    func subData(to: Int) -> Data {
+        return self.subData(from: nil, to: to)
+    }
+    
+    func subData(from: Int?, length: Int) -> Data {
+        guard length > 0 else {
+            return Data()
+        }
+        
+        let end: Int
+        if let start = from, start > 0 {
+            end = start + length - 1
+        } else {
+            end = length - 1
+        }
+        
+        return self.subData(from: from, to: end)
+    }
+    
+    func subData(length: Int, to: Int?) -> Data {
+        guard let end = to, end > 0, length > 0 else {
+            return Data()
+        }
+        
+        let start: Int
+        if let end = to, end - length > 0 {
+            start = end - length + 1
+        } else {
+            start = 0
+        }
+        
+        return self.subData(from: start, to: to)
     }
 }
 
