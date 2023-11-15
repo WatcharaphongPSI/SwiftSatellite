@@ -204,7 +204,7 @@ public class BT_Manager: UIViewController {
     
 //MARK: Setup Write Sync PlayList ------------------------
     
-    func setupWrite_SyncYoutubePlayList_BT(peripheral : Peripheral, link : String, isType : String, completion: @escaping (Bool)->Void) {
+    public func setupWrite_SyncYoutubePlayList_BT(peripheral : Peripheral, link : String, isType : String, completion: @escaping (Bool)->Void) {
         
         isPeripheral = peripheral
     
