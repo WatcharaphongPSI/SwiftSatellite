@@ -47,7 +47,13 @@ public class BT_Manager: UIViewController {
                 let getName = String(peripheral.name ?? "")
                 let myIpDevice = self.macAddress(advertisementData: advertisementData)
                 
+                print(String(peripheral.name ?? ""))
+                print(getName)
+                print(getName.hasPrefix(isSatelliteType))
+                
                 if (getName.hasPrefix(isSatelliteType)) {
+                    
+                    print(getName.hasPrefix(isSatelliteType))
                     
                     myBluetoothList = setupAppendBluetoothList(peripheral: peripheral, ipDevice: myIpDevice, rssi: RSSI ?? 0, isConnected: false)
                 }
