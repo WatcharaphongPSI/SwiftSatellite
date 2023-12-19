@@ -47,7 +47,7 @@ public class BT_Manager: UIViewController {
                 let getName = String(peripheral.name ?? "")
                 let myIpDevice = self.macAddress(advertisementData: advertisementData)
                 
-                print(String(peripheral.name ?? ""))
+                print(String(peripheral.name ?? "."))
                 print(getName)
                 print(getName.hasPrefix(isSatelliteType))
                 
