@@ -54,6 +54,7 @@ public class BT_Manager: UIViewController {
                 if (getName.hasPrefix(isSatelliteType)) {
                     
                     print(getName.hasPrefix(isSatelliteType))
+                    print(getName.hasPrefix(isSatelliteType))
                     
                     myBluetoothList = setupAppendBluetoothList(peripheral: peripheral, ipDevice: myIpDevice, rssi: RSSI ?? 0, isConnected: false)
                 }
