@@ -7,6 +7,7 @@
 
 import UIKit
 import Foundation
+import CoreBluetooth
 
 public class BT_Manager: UIViewController {
     
@@ -47,15 +48,8 @@ public class BT_Manager: UIViewController {
                 let getName = String(peripheral.name ?? "")
                 let myIpDevice = self.macAddress(advertisementData: advertisementData)
                 
-                print(String(peripheral.name ?? "."))
-                print(getName)
-                print(getName.hasPrefix(isSatelliteType))
-                
                 if (getName.hasPrefix(isSatelliteType)) {
-                    
-                    print(getName.hasPrefix(isSatelliteType))
-                    print(getName.hasPrefix(isSatelliteType))
-                    
+
                     myBluetoothList = setupAppendBluetoothList(peripheral: peripheral, ipDevice: myIpDevice, rssi: RSSI ?? 0, isConnected: false)
                 }
 
@@ -81,6 +75,8 @@ public class BT_Manager: UIViewController {
             case .success:
 
                 //Save bluetooth list ------
+                
+                setupNotify(isPeripheral: peripheral)
 
                 myBluetoothListCC = M_UserBluetooth(userTitleName: peripheral.name ?? "", userIpDevice: ipDevice, userServiceUUIDs: "", userWaveStatus: "", userStatus: "", userConnected: true, userPeripheral: peripheral, userRSSI: rssi)
                 
@@ -456,6 +452,114 @@ public class BT_Manager: UIViewController {
             return true
         }
     }
+    
+//MARK: Setup Notify ----------------------------
+    
+    func setupNotify(isPeripheral : Peripheral) {
+
+        print("write click")
+        
+        NotificationCenter.default.addObserver(forName: Peripheral.PeripheralCharacteristicValueUpdate,
+                                               object: isPeripheral,
+                                               queue: nil) { (notification) in
+            let charac = notification.userInfo!["characteristic"] as! CBCharacteristic
+            if let error = notification.userInfo?["error"] as? SBError {
+                // Deal with error
+                print("charac error : \(error)")
+            }
+            
+            print("charac : \(charac.value?.hex ?? "")")
+            let valueList = charac.value?.hex.components(separatedBy: " ")
+            self.detectBLECommand(valueList: valueList!)
+            }
+        
+        isPeripheral.setNotifyValue(toEnabled: true, forCharacWithUUID: "fff4", ofServiceWithUUID: "fff0") { result in
+            
+            // If there were no errors, you will now receive Notifications when that characteristic value gets updated.
+            switch result {
+            case .success:
+                
+                print("notify success")
+                break // The write was succesful.
+            
+            case .failure( _):
+                
+                print("notify failed")
+                break // An error happened while writting the data.
+            }
+        }
+    }
+    
+    func detectBLECommand(valueList:Array<String>)  {
+        if valueList.count > 0 {
+            let command:String = valueList[3] + valueList[4]
+        
+            print(command)
+            
+            if command == "1001" { // Prev
+            
+            }
+            
+            if command == "1002" { // Next
+                
+                print("SDK Notify : NEXT")
+                
+//                if myUserDefault.bool(forKey: key_isDisableNext_IPTV) {
+//                    
+//                    print("DisableNext_IPTV ------")
+//                } else {
+//                    NotificationCenter.default.post(name: NSNotification.Name("upButton"), object: nil)
+//                }
+            }
+            
+            if command == "1003" { // Prev
+            
+//                if myUserDefault.bool(forKey: key_isDisableNext_IPTV) {
+//                    
+//                    print("DisableNext_IPTV ------")
+//                } else {
+//                    NotificationCenter.default.post(name: NSNotification.Name("downButton"), object: nil)
+//                }
+            }
+            
+            if command == "1004" { // Chip ID
+  
+            }
+            
+            if command == "1005" { // Wifi status
+                let wifiStatus:String = valueList[7]
+                if wifiStatus == "01" {
+                    NotificationCenter.default.post(name: NSNotification.Name("wifiSuccess"), object: nil)
+
+                }
+                else if wifiStatus == "02" {
+                    NotificationCenter.default.post(name: NSNotification.Name("wifiFail"), object: nil)
+
+                }
+                else if wifiStatus == "03" {
+                    NotificationCenter.default.post(name: NSNotification.Name("wifiFail"), object: nil)
+
+                }
+            }
+        
+            if command == "1006" { // Wifi name
+                
+                print("Command : \(command)")
+            }
+            
+            if command == "1007" { //Signal Type KU or C band
+
+            }
+            
+            if command == "1008" { // For ads not use
+
+            }
+            
+            if command == "1012" { // STB  Country KH MM
+            
+            }
+        }
+    }
 }
 
 //MARK: Setup Extension -------------------------
@@ -466,6 +570,14 @@ extension Data {
     }
     func hexMacAddrEncodedString() -> String {
         return map { String(format: "%02hhx:", $0) }.joined()
+    }
+    
+    var hex: String {
+        var hexString = ""
+        for byte in self {
+            hexString += String(format: "%02X ", byte)
+        }
+        return hexString
     }
     
     //Setup Sub Data ----------------------
