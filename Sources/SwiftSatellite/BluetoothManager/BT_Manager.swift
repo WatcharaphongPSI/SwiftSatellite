@@ -219,6 +219,18 @@ public class BT_Manager: UIViewController {
         sendWriteValue(peripheral: peripheral, results: myData)
     }
     
+    public func setupWriteValueRemote_BT(peripheral : Peripheral, isButton : String) {
+        
+        let openComment : [UInt8] = [0x5B,0x53,0x5D,0x20,0x02,0x00,0x02,0x00]
+        let remoteTouch : [UInt8] = setupDetectTouchRemote(result: isButton)
+        let closeComment: [UInt8] = [0x5B,0x45,0x5D]
+        
+        let complete: [UInt8]     = openComment + remoteTouch + closeComment
+        let myData                = Data(complete)
+        
+        sendWriteValue(peripheral: peripheral, results: myData)
+    }
+    
 //MARK: Setup Write Sync PlayList ------------------------
     
     public func setupWrite_SyncYoutubePlayList_BT(peripheral : Peripheral, link : String, isType : String, completion: @escaping (Bool)->Void) {
@@ -572,6 +584,131 @@ public class BT_Manager: UIViewController {
             if command == "1012" { // STB  Country KH MM
             
             }
+        }
+    }
+    
+    func setupDetectTouchRemote(result : String) -> [UInt8] {
+        
+        switch result {
+        case "V_KEY_POWER":
+            return [0x84]
+        case "V_KEY_FAV":
+            return [0x98]
+        case "V_KEY_MUTE":
+            return [0x94]
+        case "V_KEY_ASPECT_MODE":
+            return [0xFF]
+        case "V_KEY_VIDEO_MODE":
+            return [0xFF]
+        case "V_KEY_SLEEP":
+            return [0x9F]
+        case "V_KEY_AUDIO":
+            return [0x97]
+        case "V_KEY_1":
+            return [0x87]
+        case "V_KEY_2":
+            return [0x86]
+        case "V_KEY_3":
+            return [0x85]
+        case "V_KEY_4":
+            return [0x8B]
+        case "V_KEY_5":
+            return [0x8A]
+        case "V_KEY_6":
+            return [0x89]
+        case "V_KEY_7":
+            return [0x8F]
+        case "V_KEY_8":
+            return [0x8E]
+        case "V_KEY_9":
+            return [0x8D]
+        case "V_KEY_0":
+            return [0x92]
+        case "V_KEY_SUBT":
+            return [0xFF]
+        case "V_KEY_TTX":
+            return [0xFF]
+        case "V_KEY_PAGE_UP":
+            return [0xFF]
+        case "V_KEY_PAGE_DOWN":
+            return [0xFF]
+        case "V_KEY_RECALL":
+            return [0xFF]
+        case "V_KEY_TVRADIO":
+            return [0x9B]
+        case "V_KEY_MENU":
+            return [0x93]
+        case "V_KEY_CANCEL":
+            return [0x96]
+        case "V_KEY_UP":
+            return [0x81]
+        case "V_KEY_DOWN":
+            return [0x88]
+        case "V_KEY_LEFT":
+            return [0x90]
+        case "V_KEY_RIGHT":
+            return [0x82]
+        case "V_KEY_OK":
+            return [0x99]
+        case "V_KEY_EPG":
+            return [0xCD]
+        case "V_KEY_INFO":
+            return [0x9C]
+        case "V_KEY_SAT":
+            return [0x9A]
+        case "V_KEY_RED":
+            return [0xC9]
+        case "V_KEY_GREEN":
+            return [0xC4]
+        case "V_KEY_YELLOW":
+            return [0xC6]
+        case "V_KEY_BLUE":
+            return [0xCD]
+        case "V_KEY_FIND":
+            return [0xFF]
+        case "V_KEY_ZOOM":
+            return [0xFF]
+        case "V_KEY_VUP":
+            return [0xFF]
+        case "V_KEY_VDOWN":
+            return [0xFF]
+        case "V_KEY_BACK":
+            return [0xFF]
+        case "V_KEY_FORW":
+            return [0xFF]
+        case "V_KEY_PAUSE":
+            return [0xFF]
+        case "V_KEY_STOP":
+            return [0xFF]
+        case "V_KEY_CHDOWN":
+            return [0xFF]
+        case "V_KEY_CHUP":
+            return [0xFF]
+        case "V_KEY_PLAY":
+            return [0xFF]
+        case "V_KEY_REC":
+            return [0xFF]
+        case "V_KEY_PREV":
+            return [0xFF]
+        case "V_KEY_NEXT":
+            return [0xFF]
+        case "V_KEY_REPEAT":
+            return [0xFF]
+        case "V_KEY_LIST":
+            return [0xFF]
+        case "V_KEY_GOTO":
+            return [0xFF]
+        case "V_KEY_CTRL2":
+            return [0xFF]
+        case "V_KEY_CTRL3":
+            return [0x80]
+        case "Youtube":
+            return [0x91]
+        default:
+            
+            print("None button remote ----------------")
+            
+            return [0x99]
         }
     }
 }
