@@ -205,6 +205,20 @@ public class BT_Manager: UIViewController {
         }
     }
     
+    public func setupWriteValueSatellite_BT(peripheral : Peripheral, isNumber : Int) {
+        
+        let openComment : [UInt8] = [0x5B,0x53,0x5D,0x20,0x01,0x00,0x03]
+        let closeComment: [UInt8] = [0x5B,0x45,0x5D]
+        
+        let newResults = String(format: "%03d", isNumber)
+        let arrayNumber : [UInt8] = Array(newResults.utf8)
+        
+        let complete: [UInt8] = openComment + arrayNumber + closeComment
+        let myData            = Data(complete)
+
+        sendWriteValue(peripheral: peripheral, results: myData)
+    }
+    
 //MARK: Setup Write Sync PlayList ------------------------
     
     public func setupWrite_SyncYoutubePlayList_BT(peripheral : Peripheral, link : String, isType : String, completion: @escaping (Bool)->Void) {
