@@ -528,24 +528,16 @@ public class BT_Manager: UIViewController {
             
             if command == "1002" { // Next
                 
-                print("SDK Notify : NEXT")
+                print("SDK Notify : \("1002") ------------")
                 
-//                if myUserDefault.bool(forKey: key_isDisableNext_IPTV) {
-//                    
-//                    print("DisableNext_IPTV ------")
-//                } else {
-//                    NotificationCenter.default.post(name: NSNotification.Name("upButton"), object: nil)
-//                }
+                NotificationCenter.default.post(name: NSNotification.Name("upButton"), object: nil)
             }
             
             if command == "1003" { // Prev
             
-//                if myUserDefault.bool(forKey: key_isDisableNext_IPTV) {
-//                    
-//                    print("DisableNext_IPTV ------")
-//                } else {
-//                    NotificationCenter.default.post(name: NSNotification.Name("downButton"), object: nil)
-//                }
+                print("SDK Notify : \("1003") ------------")
+                
+                NotificationCenter.default.post(name: NSNotification.Name("downButton"), object: nil)
             }
             
             if command == "1004" { // Chip ID
