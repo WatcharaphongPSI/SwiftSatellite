@@ -165,7 +165,7 @@ public class BT_Manager: UIViewController {
             
             if indexCount.count == 1 {
 
-                sendWriteValue(peripheral: peripheral, results: myData)
+                sendWriteValue_BT(peripheral: peripheral, results: myData)
                 isStatus = true
                 
                 if myLink.count == 1 { //This case link < 53 -------
@@ -185,7 +185,7 @@ public class BT_Manager: UIViewController {
   
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [self] in
 
-                    sendWriteValue(peripheral: peripheral, results: myData)
+                    sendWriteValue_BT(peripheral: peripheral, results: myData)
                     isStatus = true
 
                     if indexLoop == myLink.endIndex - 1 {
@@ -216,7 +216,7 @@ public class BT_Manager: UIViewController {
         let complete: [UInt8] = openComment + arrayNumber + closeComment
         let myData            = Data(complete)
 
-        sendWriteValue(peripheral: peripheral, results: myData)
+        sendWriteValue_BT(peripheral: peripheral, results: myData)
     }
     
     public func setupWriteValueRemote_BT(peripheral : Peripheral, isButton : String) {
@@ -228,7 +228,7 @@ public class BT_Manager: UIViewController {
         let complete: [UInt8]     = openComment + remoteTouch + closeComment
         let myData                = Data(complete)
         
-        sendWriteValue(peripheral: peripheral, results: myData)
+        sendWriteValue_BT(peripheral: peripheral, results: myData)
     }
     
 //MARK: Setup Write Sync PlayList ------------------------
@@ -303,7 +303,7 @@ public class BT_Manager: UIViewController {
         
             print("Final send to box count ------ : \(isNumber)")
             
-            sendWriteValue(peripheral: isPeripheral, results: myDataToBox[isNumber])
+            sendWriteValue_BT(peripheral: isPeripheral, results: myDataToBox[isNumber])
 
             NotificationCenter.default.post(name: NSNotification.Name("StopSendingdata"), object: nil)
 
@@ -313,7 +313,7 @@ public class BT_Manager: UIViewController {
             
             print("isNumber send : \(isNumber)")
             
-            sendWriteValue(peripheral: isPeripheral, results: myDataToBox[isNumber])
+            sendWriteValue_BT(peripheral: isPeripheral, results: myDataToBox[isNumber])
             isNumber = isNumber + 1
         }
     }
@@ -437,7 +437,7 @@ public class BT_Manager: UIViewController {
         return (results.substring(from: 0, length: 52), results.substring(from: 52))
     }
 
-    func sendWriteValue(peripheral : Peripheral, results : Data) {
+    public func sendWriteValue_BT(peripheral : Peripheral, results : Data) {
         
         peripheral.writeValue(ofCharacWithUUID: "fff4", fromServiceWithUUID: "fff0", value: results, type: .withoutResponse) {
             result in 
