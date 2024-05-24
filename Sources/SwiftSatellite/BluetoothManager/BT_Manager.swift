@@ -517,10 +517,12 @@ public class BT_Manager: UIViewController {
     }
     
     func detectBLECommand(valueList:Array<String>)  {
+        
         if valueList.count > 0 {
+            
             let command:String = valueList[3] + valueList[4]
         
-            print(command)
+            print("BT_Manager : Notify command \(command)")
             
             if command == "1001" { // Prev
             
@@ -563,6 +565,38 @@ public class BT_Manager: UIViewController {
             if command == "1006" { // Wifi name
                 
                 print("Command : \(command)")
+                
+                var myWifiName : String = ""
+                var lenght     : UInt64 = 0
+                var complete   : Bool   = false
+                
+                for (index, element) in  valueList.enumerated() {
+                    
+                    if index == 6 {
+                        
+                        let _:String    = "0x\(element)"
+                        lenght          = UInt64(element, radix:26)! * 2
+                        
+                        print("BT_Manager : Notify command \(command)")
+                    }
+                    
+                    if index > 6 && index <= lenght {
+                        
+                        myWifiName.append("\(element)")
+                        
+                        print("BT_Manager : Notify command \(myWifiName)")
+                    }
+                    
+                    if (myWifiName.length == lenght && lenght != 0 && complete == false) {
+                        
+                        let str = String(data: myWifiName.hexadecimal!, encoding: .utf8)
+                        print("str : \(str ?? "")")
+                        
+                        complete  = true
+                        
+                        NotificationCenter.default.post(name: NSNotification.Name("wifiName"), object: nil, userInfo: ["name":str as Any])
+                    }
+                }
             }
             
             if command == "1007" { //Signal Type KU or C band
@@ -874,4 +908,35 @@ extension String {
         
         return self.substring(from: start, to: to)
     }
+}
+
+extension String {
+    
+    /// Create `Data` from hexadecimal string representation
+    ///
+    /// This creates a `Data` object from hex string. Note, if the string has any spaces or non-hex characters (e.g. starts with '<' and with a '>'), those are ignored and only hex characters are processed.
+    ///
+    /// - returns: Data represented by this hexadecimal string.
+    
+    var hexadecimal: Data? {
+        var data = Data(capacity: self.count / 2)
+        
+        let regex = try! NSRegularExpression(pattern: "[0-9a-f]{1,2}", options: .caseInsensitive)
+        regex.enumerateMatches(in: self, range: NSRange(startIndex..., in: self)) { match, _, _ in
+            let byteString = (self as NSString).substring(with: match!.range)
+            let num = UInt8(byteString, radix: 16)!
+            data.append(num)
+        }
+        
+        guard data.count > 0 else { return nil }
+        
+        return data
+    }
+    
+}
+
+//Count Character ----------
+
+extension String {
+    var length: Int { return self.count }
 }
