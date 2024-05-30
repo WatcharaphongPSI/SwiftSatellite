@@ -231,6 +231,53 @@ public class BT_Manager: UIViewController {
         sendWriteValue_BT(peripheral: peripheral, results: myData)
     }
     
+    public func setupWriteValueWifiPassword(peripheral : Peripheral,isFuncCommand : [UInt8], isPassword : String) {
+        
+        let openCommand  : [UInt8]  = [0x5B,0x53,0x5D,0x20]
+        let funcCommand  : [UInt8]  = isFuncCommand
+        
+        let encryption   : [UInt8]  = [0x04]
+        let closeCommand : [UInt8]  = [0x5B,0x45,0x5D]
+        
+        let sum = 1 + isPassword.count
+        let paramLeangth : [UInt8]  = Array(byteArray(from: Int8(sum)))
+        
+        let wifiname     : [UInt8]  = Array(isPassword.utf8)
+
+        print("BT_Manager : Password     : %@", wifiname)
+        print("BT_Manager : ParamLength  : %@", paramLeangth)
+        
+        let complete     : [UInt8]  = openCommand + funcCommand + paramLeangth + encryption + wifiname + closeCommand
+        let myData                  = Data(complete)
+        
+        sendWriteValue_BT(peripheral: peripheral, results: myData)
+    }
+    
+    public func setupWriteValueWifiUsername(peripheral : Peripheral,isFuncCommand : [UInt8], isSSID : String) {
+
+        let openCommand : [UInt8] = [0x5B,0x53,0x5D,0x20]
+        let funcCommand  : [UInt8]  = isFuncCommand
+        
+        let closeCommand : [UInt8] = [0x5B,0x45,0x5D]
+        
+        let sum = 0 + isSSID.count
+        let paramLength:[UInt8] = Array(byteArray(from:Int8(sum)))
+
+        let wifiname : [UInt8] = Array(isSSID.utf8)
+        print("BT_Manager : SSID        : %@", wifiname)
+        print("BT_Manager : ParamLength : %@", paramLength)
+
+        let complete: [UInt8] = openCommand + funcCommand + paramLength + wifiname + closeCommand
+        let myData = Data(complete)
+        print("myData : %@", complete)
+        
+        sendWriteValue_BT(peripheral: peripheral, results: myData)
+    }
+    
+    func byteArray<T>(from value: T) -> [UInt8] where T: FixedWidthInteger {
+        withUnsafeBytes(of: value.bigEndian, Array.init)
+    }
+    
 //MARK: Setup Write Sync PlayList ------------------------
     
     public func setupWrite_SyncYoutubePlayList_BT(peripheral : Peripheral, link : String, isType : String, completion: @escaping (Bool)->Void) {
@@ -529,16 +576,10 @@ public class BT_Manager: UIViewController {
             }
             
             if command == "1002" { // Next
-                
-                print("SDK Notify : \("1002") ------------")
-                
                 NotificationCenter.default.post(name: NSNotification.Name("upButton"), object: nil)
             }
             
             if command == "1003" { // Prev
-            
-                print("SDK Notify : \("1003") ------------")
-                
                 NotificationCenter.default.post(name: NSNotification.Name("downButton"), object: nil)
             }
             
@@ -548,24 +589,18 @@ public class BT_Manager: UIViewController {
             
             if command == "1005" { // Wifi status
                 let wifiStatus:String = valueList[7]
+                
                 if wifiStatus == "01" {
                     NotificationCenter.default.post(name: NSNotification.Name("wifiSuccess"), object: nil)
-
-                }
-                else if wifiStatus == "02" {
+                } else if wifiStatus == "02" {
                     NotificationCenter.default.post(name: NSNotification.Name("wifiFail"), object: nil)
-
-                }
-                else if wifiStatus == "03" {
+                } else if wifiStatus == "03" {
                     NotificationCenter.default.post(name: NSNotification.Name("wifiFail"), object: nil)
-
                 }
             }
         
             if command == "1006" { // Wifi name
-                
-                print("Command : \(command)")
-                
+
                 var myWifiName : String = ""
                 var lenght     : UInt64 = 0
                 var complete   : Bool   = false
